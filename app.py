@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 def connection():
     s = 'IP,port_Number'
-    d = 'DB(회사이름)'
+    d = 'DB(company_Name)'
     u = 'DB_ID'
     p = 'DB_PassWord'
     cstr = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER='+s+';DATABASE='+d+';UID='+u+';PWD='+p+';'
