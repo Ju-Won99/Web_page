@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>자산관리</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <link rel="stylesheet" href="../../static/css/bootstrap.min.css">
+    <script src="../../static/js/list.js"></script>
+    <style>
+        table {
+        width: 100%;
+        border: 1px solid #444444;
+        border-collapse: collapse;
+        }
+        tr, td {
+            border: 1px solid #444444;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+        }
+        th {
+            padding: 10px;
+        }
+        .title {
+            float: left;
+            font-size: 15px;
+            color: blue;
+            font-weight: bold;
+        }
+        .pagination-page-info {
+        padding: .6em;
+        padding-left: 0;
+        width: 40em;
+        margin: .5em;
+        margin-left: 0;
+        font-size: 12px;
+        }
+        .pagination-page-info b {
+        color: black;
+        background: #6aa6ed;
+        padding-left: 2px;
+        padding: .1em .25em;
+        font-size: 150%;
+        }
+        .text1{
+            font-size: 12px;
+            border-bottom: 2px solid gray;
+        }
+        .menu {
+            background-color: gainsboro;
+        }
+        #control {
+            float: right;
+            text-align: center;
+            margin-left : 10px;
+        }
+        .menu label {
+            padding-top: 10px;
+            padding-bottom: 10px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .selected {
+            background-color: #8BBDFF;
+        }
+    </style>
+</head>
+<body>
+    <table class="table">
+        <thead >
+            <tr>
+                <label class="title">자산관리</label>
+                <br>
+            </tr>
+            <tr>       
+                <div class = text1>
+                  외계관리>재고실사
+                </div>
+            </tr>
+            <tr>
+                <form id="myForm" action="{{request.rul}}" method="GET"  onsubmit = "event.preventDefault()" >
+                    <div style = " border-bottom: 2px solid blue; padding-top: 7px; padding-bottom: 7px;">
+                        <span style = "font-weight: bold;">재고실사</span>
+                        <span id="control">
+                            <input type="checkbox" id="Bookmark">즐겨찾기
+                            <input type="checkbox" id="chk">조회조건 저장
+                            <input class = "button" type="submit" value="검색" id="searchbtn" onclick ="search()" style = "font-size: 14px;border-radius: 4px; border: 2px solid gainsboro;">
+                            <input class = "button" type="reset" value="초기화" id="resetbtn" onclick= "remove()" style = "font-size: 14px;border-radius: 4px; border: 2px solid gainsboro;">
+                        </span>               
+                    </div>
+                    <div class="menu">
+                        <label for="storage" style = "padding-left: 10px">창고</label>
+                        <select id="storage" name="storage" style = "margin-left: 5px;font-size:14px">
+                            <option value="">전체 데이터</option>
+                            {% for wh_id in unique_ids %}
+                                <option value="{{wh_id}}" {% if wh_id == request.args.get('storage') %}selected{% endif %}>{{wh_id}}</option>
+                            {% endfor %}
+                        </select>                                    
+                        <label for="num" style = "padding-left: 10px;"> 품번 </label>
+                        <input type="text" id="num" name="num" value="{{request.args['num']}}" style = "margin-left:5px; font-size:12px" >       <!--js에 windows.onload 를 이용해서 처음 시작할 때 현재날짜 값 받기-->
+                        <label for="Lot_No" style = "padding-left: 10px">LOT NO</label>
+                        <input type="text" id="Lot_No" name="Lot_No" value="{{request.args['Lot_No']}} "style = "margin-left:5px; font-size:12px">
+                        <label for="P_Name" style = "padding-left: 10px"> 품명</label>
+                        <input type="text" id="P_Name" name="P_Name" value="{{request.args['P_Name']}}"style = "margin-left:5px; font-size:12px">
+                    </div>
+                </form>
+            </tr>
+            <tr>
+                <div>
+                    <span style="font-size: 12px; color: blue; text-align: center;padding-left: 20px">현재고(실시간 기준)</span>
+                    <button style = "font-size: 10px;float: right;height: 24px; margin-left: -2px; border: 2px solid gainsboro;">재고실사표출력(품번)</button>
+                    <button style = "font-size: 10px;float: right;height: 24px; border: 2px solid gainsboro;">재고실사표출력(LOT NO)</button>
+                </div>
+            </tr> 
+            <tr >
+                <form id = myform2 method = "GET">
+                    <div style = "background-color:  gainsboro; border-bottom: 2px solid blue;">
+                        <span style = "font-size: 12px; color:blue;font-weight: bold">·&nbspCSV</span>
+                        <span style = "font-size: 12px; color: green;font-weight: bold">·&nbspQry</span>
+                        <span style = "float: right; margin-left: 10px;">*리스트개수 :
+                            <select style="color: blue" id="countbox" name="per_page" onchange="page_cnt()">
+                              
+                                <option value="10" {% if pagination.per_page == 10 %}selected{% endif %}>10</option>
+                                <option value="15" {% if pagination.per_page == 15 %}selected{% endif %}>15</option>
+                                <option value="20" {% if pagination.per_page == 20 %}selected{% endif %}>20</option>
+                            </select>                            
+                        </span>
+                        <span style = "float:right; padding-right: 15px">*Total : {{total}}</span>
+                        
+                    </div>
+                </form>
+            </tr>             
+            <tr>
+                <th class="tg-f4iu">No.</th>
+                <th class="tg-rg0h"><input type="checkbox" name="AllCheck">창고ID</th>
+                <th class="tg-rg0h">창고명</th>
+                <th class="tg-rg0h">품번</th>
+                <th class="tg-rg0h">품명</th>
+                <th class="tg-rg0h">LOT_NO</th>
+                <th class="tg-f4iu">UNIT</th>
+                <th class="tg-rg0h">규격</th>
+                <th class="tg-rg0h">수량</th>
+                <th class="tg-rg0h">수량(BOX)</th>
+              </tr>
+        </thead>
+        <tbody>
+            {% for app in lists: %}
+                <tr>
+                    <td class="tg-z9od">{{loop.index + pagination.skip}}</td>    <!--게시물 번호 매기기 app.index의 갯수를 사용해서 paging-->
+                    <td class="tg-z9od"><input type="checkbox" name="Check">{{app.WH_ID}}</td>
+                    <td class="tg-z9od">{{app.WH_NAME}}</td>
+                    <td class="tg-z9od">{{app.PART_ID}}</td>
+                    <td class="tg-z9od">{{app[5]}}</td>
+                    <td class="tg-z9od">{{app.LOT_NO}}</td>
+                    <td class="tg-z9od">{{app.UNIT_ID}}</td>
+                    <td class="tg-z9od">{{app.SPEC}}</td>
+                    <td class="tg-z9od">{{app[9]}}</td>
+                    <td class="tg-z9od">{{app[10]}}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {{pagination.links}}
+    <script>
+        // 검색 폼 제출 시 URL 생성 및 이동
+    function search() {
+        var storage = document.getElementById('storage').value;
+        var num = document.getElementById('num').value;
+        var Lot_No = document.getElementById('Lot_No').value;
+        var P_Name = document.getElementById('P_Name').value;
+
+        var url = window.location.href;
+        var urlParams = new URLSearchParams(window.location.search);
+
+        if (storage) {
+            if (urlParams.has('storage')) {
+            url = url.replace(/storage=[^&]*/, 'storage=' + storage);
+            } else {
+            var delimiter = url.includes('?') ? '&' : '?';
+            url += delimiter + 'storage=' + storage;
+            }
+        }
+        else {
+            url = url.replace(/storage=[^&]*/,'');
+        }
+        if (num) {
+            if (urlParams.has('num')) {
+            url = url.replace(/num=[^&]*/, 'num=' + num);
+            } else {
+            var delimiter = url.includes('?') ? '&' : '?';
+            url += delimiter + 'num=' + num;
+            }
+        } else {
+            url = url.replace(/num=[^&]*/,'');
+            
+        }
+        if (Lot_No && Lot_No.trim() !== '') {
+            if (urlParams.has('Lot_No')) {
+            url = url.replace(/Lot_No=[^&]*/, 'Lot_No=' + Lot_No);
+            } else {
+            var delimiter = url.includes('?') ? '&' : '?';
+            url += delimiter + 'Lot_No=' + Lot_No;
+            }
+        } else {
+            url = url.replace(/Lot_No=[^&]*/,'');
+        }
+        if (P_Name) {
+            if (urlParams.has('P_Name')) {
+            url = url.replace(/P_Name=[^&]*/, 'P_Name=' + P_Name);
+            } else {
+            var delimiter = url.includes('?') ? '&' : '?';
+            url += delimiter + 'P_Name=' + P_Name;
+            }
+        } else {
+            url = url.replace(/P_Name=[^&]*/,'');
+            
+        }
+        if(urlParams.has('page')) {
+            url = url.replace(/(\?|&)page=\d+/, '$1');  
+        }
+        while (url.endsWith('&')) {
+            url = url.slice(0, -1);
+        }
+        window.location.href = url;
+    }
+    function remove() {
+        document.getElementById('myForm').reset();
+        window.location.href = "http://192.168.1.160:5000"
+    }
+
+    function page_cnt() {
+        // select 요소 가져오기
+        var selectElement = document.getElementById("countbox");
+
+        // 선택된 값을 가져오기
+        var selectedValue_str = selectElement.value.toString(); // 값을 문자열로 변환
+
+        var url = window.location.href; // 현재 URL 가져오기
+
+        // 이미 PER_PAGE 매개변수가 있는지 확인
+        var hasPerPageParam = url.includes('per_page=');
+
+        // PER_PAGE 매개변수가 이미 있는 경우, 기존 매개변수를 대체
+        if (hasPerPageParam) {
+            url = url.replace(/per_page=\d+/, 'per_page=' + selectedValue_str);
+        }
+        // PER_PAGE 매개변수가 없는 경우, 매개변수 추가
+        else {
+            var delimiter = url.includes('?') ? '&' : '?'; // 기존 매개변수가 있는 경우 '&' 추가, 없는 경우 '?' 추가
+            url += delimiter + 'per_page=' + selectedValue_str;
+        }
+
+        window.location.href = url;
+    }
+    </script>
+    <script>
+        // JavaScript 코드
+        document.addEventListener('DOMContentLoaded', function() {
+          var rows = document.querySelectorAll('tbody tr'); // tbody 내의 모든 tr 요소 선택
+      
+          // 클릭 이벤트 핸들러 등록
+          rows.forEach(function(row) {
+            row.addEventListener('click', function() {
+              var selectedRows = document.querySelectorAll('.selected');
+      
+              // 중복된 tr 처리
+              if (selectedRows.length === 1 && selectedRows[0] === this) {
+                // 현재 클릭한 tr과 이전에 선택한 tr이 동일한 경우
+                return; // 아무 작업도 수행하지 않음
+              }
+      
+              // 이전에 선택한 행의 배경색 원래대로 돌리기
+              selectedRows.forEach(function(selectedRow) {
+                selectedRow.classList.remove('selected');
+              });
+      
+              // 현재 클릭한 tr 배경색 변경
+              this.classList.add('selected');
+            });
+          });
+        });
+      </script>
+</body>
+</html>
