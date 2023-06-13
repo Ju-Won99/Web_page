@@ -6,10 +6,10 @@ import sub_select
 app = Flask(__name__)
 
 def connection():
-    s = '192.168.1.230,3103'
-    d = 'BODITECH_MES'
-    u = 'geust_01'
-    p = 'choi990$%^'
+    s = 'IP,port_Number'
+    d = 'DB(회사이름)'
+    u = 'DB_ID'
+    p = 'DB_PassWord'
     cstr = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER='+s+';DATABASE='+d+';UID='+u+';PWD='+p+';'
     conn = pyodbc.connect(cstr)
     return conn
