@@ -1,2 +1,2 @@
 # Web_page
- Using JavaScript and Node.js to fetch data from SQL Server and display it as a web page
+ Using Python(flask) and html and javascript to fetch data from SQL Server and display it as a web page
