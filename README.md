@@ -1,6 +1,6 @@
 # Web_page
  Using Python(flask) and html and javascript to fetch data from SQL Server and display it as a web page
-
+ PYTHON FLASK <--> IIS connect Local_Sever
 __pycache__ 폴더:
 
 이 폴더는 Python 파일이 컴파일된 후 생성되는 캐시 파일들을 저장하는 곳입니다.
